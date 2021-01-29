@@ -161,12 +161,14 @@ public class AccountDetails extends MysqlConnection {
 			ResultSet rs=statement.executeQuery(query);
 			while(rs.next())  
 				System.out.println(
-					rs.getInt(1)+"\n"
-					+ rs.getString(2)+"\n"
-					+ rs.getString(3)+"\n"
-					+ rs.getString(4)+"\n"
-					+ rs.getString(5)+"\n"
-					+ rs.getString(6)
+					"_______________________________\n"+
+					"Account Type: "+rs.getInt(1)+"\n"+
+					"Account Number: "+ rs.getString(2)+"\n"+
+					"Account Holder: "+ rs.getString(3)+"\n"+
+					"Mobile Number: "+ rs.getString(4)+"\n"+
+					"Amount in Account: "+ rs.getString(5)+"\n"+
+					"Currency Type: "+ rs.getString(6)+
+					"\n_______________________________"
 				); 
 			conn.close();
 		}catch(Exception e) {
@@ -248,21 +250,26 @@ public class AccountDetails extends MysqlConnection {
 	public void updateAccountType(BigInteger accountNumber) {
 		System.out.print("\nEnter Type of Account: \n1.Saving \n2.Current \n(1/2)?\n");
 		this.setAccountType(sc.nextInt());
-		String query = "UPDATE ACCOUNT"
+		if(this.getAccountType()==1||this.getAccountType()==2) {
+			String query = "UPDATE ACCOUNT"
 					+ " SET ACCOUNT_TYPE ="+this.getAccountType()
 					+ " WHERE ACCOUNT_NUMBER = "+accountNumber;
 		
-		try {
-			Connection conn = mysqlConnection.connect();
-			Statement statement = conn.createStatement();
-			int count= statement.executeUpdate(query);
-			if(count>=1) {
-				System.out.print("\nACCOUNT-TYPE UPDATE SUCCESSFUL!!\n");
+			try {
+				Connection conn = mysqlConnection.connect();
+				Statement statement = conn.createStatement();
+				int count= statement.executeUpdate(query);
+				if(count>=1) {
+					System.out.print("\nACCOUNT-TYPE UPDATE SUCCESSFUL!!\n");
+				}
+				conn.close();
+			}catch(Exception e) {
+				System.out.println(e);
 			}
-			conn.close();
-		}catch(Exception e) {
-			System.out.println(e);
+		}else {
+			System.out.print("\nInvalid Account Type!!\n");
 		}
+		
 	}
 	
 	public void updateMobileNumber(BigInteger accountNumber) {

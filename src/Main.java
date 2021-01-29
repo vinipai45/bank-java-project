@@ -5,7 +5,7 @@ public class Main extends AccountDetails {
 		
 		AccountDetails accountDetails = new AccountDetails();
 		String input = new String("");
-		
+		System.out.print("******MOCK BANK APPLICATION****** ");
 		while(!input.equals("N")) {
 			Scanner sc= new Scanner(System.in);
 			System.out.println("\n\nPlease select the option:");
@@ -27,7 +27,7 @@ public class Main extends AccountDetails {
 					break;
 				case "D":accountDetails.deleteAccount();
 					break;
-				case "N":System.out.print("THANK YOU! \nVISIT AGAIN!!");
+				case "N":System.out.print("BYE!");
 					break;
 				default:
 					System.out.println("Invalid Input! \n Try again! \n\n");
