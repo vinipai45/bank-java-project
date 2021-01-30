@@ -77,7 +77,13 @@ public class AccountDetails extends MysqlConnection {
 		System.out.print("\nEnter Mobile Number:\n");
 		this.setMobileNumber(sc.nextBigInteger());
 		System.out.print("\nEnter 16-digit account number: \n");
-		this.setAccountNumber(sc.nextBigInteger());
+		accountNumber = sc.nextBigInteger();
+		if(accountNumber.toString().length()>16 || accountNumber.toString().length()<16 ) {
+			System.out.print("Not a 16 digit number");
+			return;
+		}else {
+			this.setAccountNumber(accountNumber);
+		}
 		System.out.print("\nEnter the Amount: \n");
 		this.setBalance(sc.nextInt());
 		System.out.print("\nEnter the Currency: \n");
