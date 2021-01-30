@@ -1,5 +1,6 @@
 import java.math.BigInteger;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class AccountDetails extends MysqlConnection {
@@ -67,6 +68,8 @@ public class AccountDetails extends MysqlConnection {
 	
 	//CRUD - operations
 	public void createAccount() {
+		ArrayList<Object> newAccount = new ArrayList<>();
+		
 		System.out.print("Enter Type of Account:\n1.Saving\n2.Current\n(1/2)?");
 		this.setAccountType(sc.nextInt());
 		System.out.print("\nEnter the Account Holder Full Name:\n");
@@ -94,12 +97,26 @@ public class AccountDetails extends MysqlConnection {
 			if(count>=1) {
 				System.out.print("\nAccount Added in Database \n");
 				System.out.print("____________________________");
-				System.out.print("\nAccount Type : " + this.getAccountType());
+				if(this.getAccountType()==1) {
+					System.out.print("\nAccount Type : " + "Savings");
+				}else {
+					System.out.print("\nAccount Type : " + "Current");
+				}
 				System.out.print("\nAccount Number : " + this.getAccountNumber());
 				System.out.print("\nAccount Holder Name : " + this.getName());
+				System.out.print("\nMobile Number : " + this.getMobileNumber());
 				System.out.print("\nAmount in Account : " + this.getBalance());
 				System.out.print("\nCurrency mode : " + this.getCurrencyType() );
 				System.out.print("\n____________________________");
+				
+				newAccount.add(this.getAccountType());
+				newAccount.add(this.getAccountNumber());
+				newAccount.add(this.getName());
+				newAccount.add(this.getMobileNumber());
+				newAccount.add(this.getBalance());
+				newAccount.add(this.getCurrencyType());
+//				System.out.println(newAccount);
+				
 			}
 			conn.close();
 		}catch(Exception e) {
@@ -126,18 +143,23 @@ public class AccountDetails extends MysqlConnection {
 						+ "Your Choice - ");
 				input = sc.next();
 				switch(input) {
-					case "1": this.updateName(this.getAccountNumber());
-						break;
-					case "2":this.updateAccountType(this.getAccountNumber());;
-						break;
-					case "3":this.updateMobileNumber(this.getAccountNumber());;
-						break;
-					case "4":this.updateBalance(this.getAccountNumber());
-						break;
-					case "5":this.updateCurrencyType(this.getAccountNumber());
-						break;
+					case "1": 	this.updateName(this.getAccountNumber());
+								this.viewAccount();
+								break;
+					case "2":	this.updateAccountType(this.getAccountNumber());
+								this.viewAccount();
+								break;
+					case "3":	this.updateMobileNumber(this.getAccountNumber());
+								this.viewAccount();
+								break;
+					case "4":	this.updateBalance(this.getAccountNumber());
+								this.viewAccount();
+								break;
+					case "5":	this.updateCurrencyType(this.getAccountNumber());
+								this.viewAccount();
+								break;
 					case "6": 
-						break;
+								break;
 					default:
 						System.out.println("Invalid Input! \n Try again! \n\n");
 				}		
@@ -149,9 +171,6 @@ public class AccountDetails extends MysqlConnection {
 	}
 	
 	public void viewAccount() {
-		System.out.print("Enter Account Number to view:\n");
-		this.setAccountNumber(sc.nextBigInteger());
-		
 		String query = "SELECT * from ACCOUNT WHERE ACCOUNT_NUMBER="+this.getAccountNumber();
 
 		try {

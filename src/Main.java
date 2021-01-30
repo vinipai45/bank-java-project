@@ -23,7 +23,10 @@ public class Main extends AccountDetails {
 					break;
 				case "E":accountDetails.updateAccount();
 					break;
-				case "V":accountDetails.viewAccount();
+				case "V":		
+					System.out.print("Enter Account Number to view:\n");
+					accountDetails.setAccountNumber(sc.nextBigInteger());
+					accountDetails.viewAccount();
 					break;
 				case "D":accountDetails.deleteAccount();
 					break;
