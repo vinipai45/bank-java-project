@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class AccountDetails extends MysqlConnection {
-	private int accountType;
+	private String accountType;
 	private BigInteger accountNumber;
 	private String name;
 	private BigInteger mobileNumber;
@@ -12,10 +12,11 @@ public class AccountDetails extends MysqlConnection {
 	private String currencyType;
 	
 	Scanner sc= new Scanner(System.in);
+	Scanner scName= new Scanner(System.in).useDelimiter(" ");
 	MysqlConnection mysqlConnection = new MysqlConnection();
 	
 	//getters
-	public int getAccountType() {
+	public String getAccountType() {
 	    return accountType;
 	}
 	
@@ -41,7 +42,7 @@ public class AccountDetails extends MysqlConnection {
 	
 	
 	//setters
-	public void setAccountType(int accountType) {
+	public void setAccountType(String accountType) {
 	    this.accountType = accountType;
 	}
 	
@@ -65,15 +66,21 @@ public class AccountDetails extends MysqlConnection {
 		this.currencyType = currencyType;
 	}
 	
-	
 	//CRUD - operations
-	public void createAccount() {
-		ArrayList<Object> newAccount = new ArrayList<>();
-		
+	public void createAccount() {		
 		System.out.print("Enter Type of Account:\n1.Saving\n2.Current\n(1/2)?");
-		this.setAccountType(sc.nextInt());
+		int type =sc.nextInt();
+		String[] at = {"Savings","Current"};
+		if(type == 1) {
+			this.setAccountType(at[0]);
+		}else if(type == 2) {
+			this.setAccountType(at[1]);
+		}else {
+			System.out.print("Invalid Input");
+			return;
+		}
 		System.out.print("\nEnter the Account Holder Full Name:\n");
-		this.setName(sc.next());
+		this.setName(scName.nextLine());
 		System.out.print("\nEnter Mobile Number:\n");
 		this.setMobileNumber(sc.nextBigInteger());
 		System.out.print("\nEnter 16-digit account number: \n");
@@ -90,7 +97,7 @@ public class AccountDetails extends MysqlConnection {
 		this.setCurrencyType(sc.next());
 		
 		String query = "INSERT INTO ACCOUNT VALUES ("
-				+ this.getAccountType()+","
+				+ "'"+this.getAccountType()+"'"+","
 				+ this.getAccountNumber()+"," 
 				+ "'"+this.getName()+"'"+","
 				+ this.getMobileNumber()+","
@@ -102,34 +109,14 @@ public class AccountDetails extends MysqlConnection {
 			int count = statement.executeUpdate(query);
 			if(count>=1) {
 				System.out.print("\nAccount Added in Database \n");
-				System.out.print("____________________________");
-				if(this.getAccountType()==1) {
-					System.out.print("\nAccount Type : " + "Savings");
-				}else {
-					System.out.print("\nAccount Type : " + "Current");
-				}
-				System.out.print("\nAccount Number : " + this.getAccountNumber());
-				System.out.print("\nAccount Holder Name : " + this.getName());
-				System.out.print("\nMobile Number : " + this.getMobileNumber());
-				System.out.print("\nAmount in Account : " + this.getBalance());
-				System.out.print("\nCurrency mode : " + this.getCurrencyType() );
-				System.out.print("\n____________________________");
-				
-				newAccount.add(this.getAccountType());
-				newAccount.add(this.getAccountNumber());
-				newAccount.add(this.getName());
-				newAccount.add(this.getMobileNumber());
-				newAccount.add(this.getBalance());
-				newAccount.add(this.getCurrencyType());
-//				System.out.println(newAccount);
-				
+				this.viewAccount();
 			}
 			conn.close();
 		}catch(Exception e) {
+			System.out.println("Entered catch in createAccount");
 			System.out.println(e);
 		}
-		
-		
+
 	}
 	
 	public void updateAccount() {
@@ -137,15 +124,16 @@ public class AccountDetails extends MysqlConnection {
 		this.setAccountNumber(sc.nextBigInteger());
 		if(this.findAccountNumber(this.getAccountNumber())){
 			String input = new String("");
-			while(!input.equals("6")) {
+			while(!input.equals("7")) {
 				Scanner sc= new Scanner(System.in);
 				System.out.print("\n\nWhat do you want to update ? \n");
 				System.out.print("1: Account Holder Name \n"
 						+ "2: Account Type \n"
 						+ "3: Mobile Number \n"
-						+ "4: Amount in Account  \n"
-						+ "5: Currency Type \n"
-						+ "6: Exit Update!\n"
+						+ "4: Credit Amount  \n"
+						+ "5: Debit Amount  \n"
+						+ "6: Currency Type \n"
+						+ "7: Exit Update!\n"
 						+ "Your Choice - ");
 				input = sc.next();
 				switch(input) {
@@ -158,13 +146,16 @@ public class AccountDetails extends MysqlConnection {
 					case "3":	this.updateMobileNumber(this.getAccountNumber());
 								this.viewAccount();
 								break;
-					case "4":	this.updateBalance(this.getAccountNumber());
+					case "4":	this.updateCreditAmount(this.getAccountNumber());
+								this.viewAccount();	
+								break;
+					case "5":	this.updateDebitAmount(this.getAccountNumber());
+								this.viewAccount();	
+								break;
+					case "6":	this.updateCurrencyType(this.getAccountNumber());
 								this.viewAccount();
 								break;
-					case "5":	this.updateCurrencyType(this.getAccountNumber());
-								this.viewAccount();
-								break;
-					case "6": 
+					case "7": 
 								break;
 					default:
 						System.out.println("Invalid Input! \n Try again! \n\n");
@@ -177,6 +168,7 @@ public class AccountDetails extends MysqlConnection {
 	}
 	
 	public void viewAccount() {
+		ArrayList<Object> newAccount = new ArrayList<>();
 		String query = "SELECT * from ACCOUNT WHERE ACCOUNT_NUMBER="+this.getAccountNumber();
 
 		try {
@@ -184,10 +176,10 @@ public class AccountDetails extends MysqlConnection {
 			Connection conn = mysqlConnection.connect();
 			Statement statement = conn.createStatement();
 			ResultSet rs=statement.executeQuery(query);
-			while(rs.next())  
+			while(rs.next()) { 
 				System.out.println(
 					"_______________________________\n"+
-					"Account Type: "+rs.getInt(1)+"\n"+
+					"Account Type: "+rs.getString(1)+"\n"+
 					"Account Number: "+ rs.getString(2)+"\n"+
 					"Account Holder: "+ rs.getString(3)+"\n"+
 					"Mobile Number: "+ rs.getString(4)+"\n"+
@@ -195,6 +187,17 @@ public class AccountDetails extends MysqlConnection {
 					"Currency Type: "+ rs.getString(6)+
 					"\n_______________________________"
 				); 
+				newAccount.add(rs.getString(1));
+				newAccount.add(rs.getString(2));
+				newAccount.add(rs.getString(3));
+				newAccount.add(rs.getString(4));
+				newAccount.add(rs.getString(5));
+				newAccount.add(rs.getString(6));
+				
+			}
+			
+			System.out.println("\n\n"+newAccount);
+			
 			conn.close();
 		}catch(Exception e) {
 			System.out.println(e);
@@ -254,7 +257,7 @@ public class AccountDetails extends MysqlConnection {
 	//update information functions
 	public void updateName(BigInteger accountNumber) {
 		System.out.print("\nEnter New Name:\n");
-		this.setName(sc.next());
+		this.setName(scName.nextLine());
 		String query = "UPDATE ACCOUNT"
 					+ " SET NAME ="+"'"+this.getName()+"'" 
 					+ " WHERE ACCOUNT_NUMBER = "+accountNumber;
@@ -265,6 +268,7 @@ public class AccountDetails extends MysqlConnection {
 			int count= statement.executeUpdate(query);
 			if(count>=1) {
 				System.out.print("\nNAME UPDATE SUCCESSFUL!!\n");
+				
 			}
 			conn.close();
 		}catch(Exception e) {
@@ -274,11 +278,19 @@ public class AccountDetails extends MysqlConnection {
 	
 	public void updateAccountType(BigInteger accountNumber) {
 		System.out.print("\nEnter Type of Account: \n1.Saving \n2.Current \n(1/2)?\n");
-		this.setAccountType(sc.nextInt());
-		if(this.getAccountType()==1||this.getAccountType()==2) {
-			String query = "UPDATE ACCOUNT"
-					+ " SET ACCOUNT_TYPE ="+this.getAccountType()
-					+ " WHERE ACCOUNT_NUMBER = "+accountNumber;
+		int type=sc.nextInt();
+		String[] at = {"Savings","Current"};
+		if(type == 1) {
+			this.setAccountType(at[0]);
+		}else if(type == 2) {
+			this.setAccountType(at[1]);
+		}else {
+			System.out.print("Invalid Input");
+			return;
+		}
+		String query = "UPDATE ACCOUNT"
+				+ " SET ACCOUNT_TYPE ="+"'"+this.getAccountType()+"'"
+				+ " WHERE ACCOUNT_NUMBER = "+accountNumber;
 		
 			try {
 				Connection conn = mysqlConnection.connect();
@@ -291,9 +303,7 @@ public class AccountDetails extends MysqlConnection {
 			}catch(Exception e) {
 				System.out.println(e);
 			}
-		}else {
-			System.out.print("\nInvalid Account Type!!\n");
-		}
+	
 		
 	}
 	
@@ -316,22 +326,68 @@ public class AccountDetails extends MysqlConnection {
 		}
 	}
 	
-	public void updateBalance(BigInteger accountNumber) {
-		System.out.print("Enter new Amount : \n");
-		this.setBalance(sc.nextDouble());
+
+	public void updateCreditAmount(BigInteger accountNumber) {
+		System.out.print("Enter Amount to credit : \n");
+		Double amount = sc.nextDouble();
+		
+		String selectQuery = "SELECT BALANCE FROM account WHERE ACCOUNT_NUMBER = "+this.getAccountNumber();
+		try {
+			Connection conn = mysqlConnection.connect();
+			Statement statement = conn.createStatement();
+			ResultSet rs=statement.executeQuery(selectQuery);
+			while(rs.next()) {
+				this.setBalance(rs.getDouble(1)+amount);
+			}
+				
 		String query = "UPDATE ACCOUNT"
 					+ " SET BALANCE ="+this.getBalance()
 					+ " WHERE ACCOUNT_NUMBER = "+accountNumber;
 		
+		
+			int count= statement.executeUpdate(query);
+			if(count>=1) {
+				System.out.print("\nAMOUNT CREDITED SUCCESSFUL!!\n");
+			}
+			conn.close();
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+
+		
+	}
+
+	public void updateDebitAmount(BigInteger accountNumber) {
+		System.out.print("Enter Amount to debit : \n");
+		Double amount = sc.nextDouble();
+		
+		String selectQuery = "SELECT BALANCE FROM account WHERE ACCOUNT_NUMBER = "+this.getAccountNumber();
 		try {
 			Connection conn = mysqlConnection.connect();
 			Statement statement = conn.createStatement();
+			ResultSet rs=statement.executeQuery(selectQuery);
+			while(rs.next()) {
+				if(amount>rs.getDouble(1)) {
+					System.out.print("No enough Balance to debit!!\n");
+					return;
+				}else {
+					this.setBalance(rs.getDouble(1)-amount);
+				}
+			}
+				
+		String query = "UPDATE ACCOUNT"
+					+ " SET BALANCE ="+this.getBalance()
+					+ " WHERE ACCOUNT_NUMBER = "+accountNumber;
+		
+		
 			int count= statement.executeUpdate(query);
 			if(count>=1) {
-				System.out.print("\nAMOUNT UPDATE SUCCESSFUL!!\n");
+				System.out.print("\nAMOUNT CREDITED SUCCESSFUL!!\n");
 			}
 			conn.close();
-		}catch(Exception e) {
+		}
+		catch(Exception e) {
 			System.out.println(e);
 		}
 	}
